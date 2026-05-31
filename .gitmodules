@@ -1,0 +1,3 @@
+[submodule "third_party/kcoreaddons"]
+	path = third_party/kcoreaddons
+	url = https://github.com/KDE/kcoreaddons.git

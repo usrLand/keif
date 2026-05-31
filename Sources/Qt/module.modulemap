@@ -1,0 +1,6 @@
+module Qt [system] {
+    header "Qt.h"
+    link "Qt6Core"
+    requires cplusplus
+    export *
+}
