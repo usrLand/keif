@@ -1,5 +1,5 @@
-internal import Qt
-internal import Blusher
+import KQt
+import Blusher
 
 public class KAboutLicense {
     public enum LicenseKey: Int {
@@ -34,7 +34,7 @@ public class KAboutLicense {
         public static var gplV2: Self { GPL }
         public static var lgpl: Self { .LGPL }
         public static var lgplV2: Self { .LGPL }
-        public static var bsdl: Int { BSDL }
+        // public static var bsdl: Int { BSDL }
         public static var bsd2clause: Self { .BSD_2_Clause }
         public static var artistic: Self { .Artistic }
         public static var gplV3: Self { .GPL_V3 }
@@ -79,13 +79,33 @@ public class KAboutLicense {
         return ""   // TODO: MUST IMPLEMENT
     }
     public var spdx: String {
-        return ""   // TODO: MUST IMPLEMENT
+        // SPDX licenses are comprised of an identifier (e.g. GPL-2.0), an optional + to denote 'or
+        // later versions' and optional ' WITH $exception' to denote standardized exceptions from the
+        // core license. As we do not offer exceptions we effectively only return GPL-2.0 or GPL-2.0+,
+        // this may change in the future. To that end the documentation makes no assertions about the
+        // actual content of the SPDX license expression we return.
+        // Expressions can in theory also contain AND, OR and () to build constructs involving more than
+        // one license. As this is outside the scope of a single license object we'll ignore this here
+        // for now.
+        // The expectation is that the return value is only run through spec-compliant parsers, so this
+        // can potentially be changed.
+
+        let id = self.spdxID()
+        // QString can be null while Swift String can't be.
+        /*
+        if id == nil {
+            return id
+        }
+        */
+        return _versionRestriction == .orLaterVersions ? "\(id)+" : id
     }
+
     public var text: String {
         var result = ""
 
         let lineFeed = "\n\n"
 
+        // TODO: !MUST IMPLEMENT!
         /*
         if (_aboutData && !d->_aboutData->copyrightStatement().isEmpty()
             && (d->_licenseKey == KAboutLicense::BSD_2_Clause || d->_licenseKey == KAboutLicense::BSD_3_Clause || d->_licenseKey == KAboutLicense::MIT
@@ -132,20 +152,16 @@ public class KAboutLicense {
             pathToFile = ("MIT");
             break;
         case .ODbL_V1, .Apache_V2, .FTL, .BSL_V1, .BSD_3_Clause, .CC0_V1, .MPL_V2:
-            let resultC1 = KQCoreApplication_translate(
-                KQCoreApplication_instance(),
+            var result1 = KQCoreApplication.translate(
                 "KAboutLicense",
-                "<p>This program is distributed under the terms of the %1.</p>",
-                nil, -1)
-            let resultC2 = KQCoreApplication_translate(
-                KQCoreApplication_instance(),
+                "<p>This program is distributed under the terms of the %1.</p>"
+            )
+            var result2 = KQCoreApplication.translate(
                 "KAboutLicense",
-                "<p>You can find the full terms on <a href=\"https://spdx.org/licenses/%1.html\">the SPDX website</a>.</p>",
-                nil, -1)
+                "<p>You can find the full terms on <a href=\"https://spdx.org/licenses/%1.html\">the SPDX website</a>.</p>"
+            )
 
-            var result1 = String(cString: resultC1!)
             result1 = result1.replacing("%1", with: self.name(.shortName))
-            var result2 = String(cString: resultC2!)
             result2 = result2.replacing("%1", with: self.spdxID())
 
             result += result1 + result2
@@ -156,24 +172,21 @@ public class KAboutLicense {
             }
             fallthrough
         default:
-            let resultC = KQCoreApplication_translate(
-                KQCoreApplication_instance(),
+            result += KQCoreApplication.translate(
                 "KAboutLicense",
                 "No licensing terms for this program have been specified.\n"
                     + "Please check the documentation or the source for any\n"
-                    + "licensing terms.\n",
-                nil, -1)
-            result += String(cString: resultC!)
+                    + "licensing terms.\n"
+            )
         }
 
         if (knownLicense) {
             pathToFile = ":/org.kde.kcoreaddons/licenses/" + pathToFile;
-            let resultC = KQCoreApplication_translate(
-                KQCoreApplication_instance(),
+            let resultTr = KQCoreApplication.translate(
                 "KAboutLicense",
-                "This program is distributed under the terms of the %1.",
-                nil, -1)
-            var resultSwift = String(cString: resultC!)
+                "This program is distributed under the terms of the %1."
+            )
+            var resultSwift = resultTr
             resultSwift = resultSwift.replacing("%1", with: self.name(.shortName))
             result += resultSwift
             if (!pathToFile.isEmpty) {
@@ -244,7 +257,7 @@ public class KAboutLicense {
         _init(licenseType, .OnlyThisVersion, aboutData)
     }
 
-    public init(aboutData: KAboutData?)
+    public init(_ aboutData: KAboutData?)
     {
         _init(.unknown, .OnlyThisVersion, aboutData)
     }
@@ -299,5 +312,17 @@ public class KAboutLicense {
         default:
             return ""
         }
+    }
+
+    internal func setLicenseFromPath(_ pathToFile: String)
+    {
+        _licenseKey = .File;
+        _pathToLicenseTextFile = pathToFile;
+    }
+
+    internal func setLicenseFromText(_ licenseText: String)
+    {
+        _licenseKey = .Custom;
+        _licenseText = licenseText;
     }
 }

@@ -6,19 +6,19 @@ public class KAboutComponent {
     private var _license: KAboutLicense
 
     public var description: String {
-        get { "" }
+        _description
     }
     public var license: KAboutLicense {
         get { _license }
     }
     public var name: String {
-        get { "" }
+        _name
     }
     public var version: String {
-        get { "" }
+        _version
     }
     public var webAddress: String {
-        get { "" }
+        _webAddress
     }
 
     public init(

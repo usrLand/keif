@@ -22,7 +22,7 @@ let package = Package(
         ),
         .target(
             name: "KCoreAddons",
-            dependencies: ["Qt"],
+            dependencies: ["KQt"],
             swiftSettings: [
                 .unsafeFlags(["-enable-library-evolution"]),
                 .unsafeFlags([
@@ -36,6 +36,14 @@ let package = Package(
         .systemLibrary(
             name: "Qt",
             pkgConfig: "Qt6Core"
+        ),
+        .target(
+            name: "KQt",
+            dependencies: ["Qt"],
+            swiftSettings: [
+                .unsafeFlags(["-enable-library-evolution"]),
+                .interoperabilityMode(.Cxx)
+            ]
         ),
         .testTarget(
             name: "KrestTests",
