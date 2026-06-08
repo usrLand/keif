@@ -3,6 +3,11 @@
 
 import PackageDescription
 
+let swiftBlusherFlags = [
+    "-I../blusher/.build/debug/Modules",
+    "-L../blusher/.build/debug",
+]
+
 let package = Package(
     name: "keif",
     products: [
@@ -48,10 +53,19 @@ let package = Package(
             dependencies: ["KQt"],
             swiftSettings: [
                 .unsafeFlags(["-enable-library-evolution"]),
-                .unsafeFlags([
-                    "-I../blusher/.build/debug/Modules",
-                    "-L../blusher/.build/debug",
-                ]),
+                .unsafeFlags(swiftBlusherFlags),
+                .interoperabilityMode(.Cxx),
+            ],
+            linkerSettings: [
+                .linkedLibrary("Blusher"),
+            ]
+        ),
+        .target(
+            name: "KConfig",
+            dependencies: ["KQt"],
+            swiftSettings: [
+                .unsafeFlags(["-enable-library-evolution"]),
+                .unsafeFlags(swiftBlusherFlags),
                 .interoperabilityMode(.Cxx),
             ],
             linkerSettings: [
@@ -63,10 +77,7 @@ let package = Package(
             dependencies: ["KQt", "KCoreAddons"],
             swiftSettings: [
                 .unsafeFlags(["-enable-library-evolution"]),
-                .unsafeFlags([
-                    "-I../blusher/.build/debug/Modules",
-                    "-L../blusher/.build/debug",
-                ]),
+                .unsafeFlags(swiftBlusherFlags),
                 .interoperabilityMode(.Cxx),
             ],
             linkerSettings: [
