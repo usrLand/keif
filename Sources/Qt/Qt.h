@@ -1,5 +1,5 @@
-#ifndef KREST_QT_H
-#define KREST_QT_H
+#ifndef KEIF_QT_H
+#define KEIF_QT_H
 
 #include <stdbool.h>
 
@@ -122,4 +122,4 @@ KQString* KQStandardPaths_locate(const char *v);
 }
 #endif
 
-#endif /* KREST_QT_H */
+#endif /* KEIF_QT_H */

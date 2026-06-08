@@ -1,3 +1,6 @@
 [submodule "third_party/kcoreaddons"]
 	path = third_party/kcoreaddons
 	url = https://github.com/KDE/kcoreaddons.git
+[submodule "third_party/kxmlgui"]
+	path = third_party/kxmlgui
+	url = https://github.com/KDE/kxmlgui.git

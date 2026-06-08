@@ -4,14 +4,14 @@
 import PackageDescription
 
 let package = Package(
-    name: "krest",
+    name: "keif",
     products: [
         // .library(
         //     name: "Krest6",
         //     targets: ["Krest6"]
         // ),
         .library(
-            name: "KrestCoreAddons",
+            name: "KeifCoreAddons",
             type: .dynamic,
             targets: ["KCoreAddons"]
         ),
