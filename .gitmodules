@@ -4,3 +4,6 @@
 [submodule "third_party/kxmlgui"]
 	path = third_party/kxmlgui
 	url = https://github.com/KDE/kxmlgui.git
+[submodule "third_party/kconfig"]
+	path = third_party/kconfig
+	url = https://github.com/KDE/kconfig.git
