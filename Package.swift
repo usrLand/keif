@@ -15,24 +15,19 @@ let package = Package(
             type: .dynamic,
             targets: ["KCoreAddons"]
         ),
+        .library(
+            name: "KeifXMLGUI",
+            type: .dynamic,
+            targets: ["KXMLGUI"]
+        ),
     ],
     targets: [
         .target(
             name: "Krest"
         ),
-        .target(
-            name: "KCoreAddons",
-            dependencies: ["KQt"],
-            swiftSettings: [
-                .unsafeFlags(["-enable-library-evolution"]),
-                .unsafeFlags([
-                    "-I../blusher/.build/debug/Modules",
-                    "-L../blusher/.build/debug",
-                    "-lBlusher",
-                ]),
-                .interoperabilityMode(.Cxx),
-            ]
-        ),
+        //==========
+        // Qt
+        //==========
         .systemLibrary(
             name: "Qt",
             pkgConfig: "Qt6Core"
@@ -45,6 +40,42 @@ let package = Package(
                 .interoperabilityMode(.Cxx)
             ]
         ),
+        //===========
+        // Ports
+        //===========
+        .target(
+            name: "KCoreAddons",
+            dependencies: ["KQt"],
+            swiftSettings: [
+                .unsafeFlags(["-enable-library-evolution"]),
+                .unsafeFlags([
+                    "-I../blusher/.build/debug/Modules",
+                    "-L../blusher/.build/debug",
+                ]),
+                .interoperabilityMode(.Cxx),
+            ],
+            linkerSettings: [
+                .linkedLibrary("Blusher"),
+            ]
+        ),
+        .target(
+            name: "KXMLGUI",
+            dependencies: ["KQt", "KCoreAddons"],
+            swiftSettings: [
+                .unsafeFlags(["-enable-library-evolution"]),
+                .unsafeFlags([
+                    "-I../blusher/.build/debug/Modules",
+                    "-L../blusher/.build/debug",
+                ]),
+                .interoperabilityMode(.Cxx),
+            ],
+            linkerSettings: [
+                .linkedLibrary("Blusher"),
+            ]
+        ),
+        //===========
+        // Tests
+        //===========
         .testTarget(
             name: "KrestTests",
             dependencies: ["Krest", "Qt", "KCoreAddons"],
