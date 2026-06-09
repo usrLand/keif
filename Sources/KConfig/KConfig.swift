@@ -117,6 +117,52 @@ public class KConfig: KConfigBase {
     private var _etc_kderc: String
     private var _configState: AccessMode
 
+    internal var _backend: KConfigINIBackend
+
+    internal init(
+        _ flags: KConfig.OpenFlags,
+        _ resourceType: KQStandardPaths.StandardLocation,
+        _ backend: KConfigINIBackend? // TODO
+    ) {
+        _openFlags = flags
+        _resourceType = resourceType
+        _backend = backend!
+        _bDirty = false
+        _bReadDefaults = false
+        _bFileImmutable = false
+        _bForceGlobal = false
+        _bSuppressGlobal = false
+        _configState = .noAccess
+/*
+        const bool isTestMode = QStandardPaths::isTestModeEnabled();
+        // If sGlobalFileName was initialised and testMode has been toggled,
+        // sGlobalFileName may need to be updated to point to the correct kdeglobals file
+        if (sGlobalFileName.exists() && s_wasTestModeEnabled != isTestMode) {
+            s_wasTestModeEnabled = isTestMode;
+            *sGlobalFileName = QStandardPaths::writableLocation(QStandardPaths::GenericConfigLocation) + QLatin1String("/kdeglobals");
+        }
+
+        static QBasicAtomicInt use_etc_kderc = Q_BASIC_ATOMIC_INITIALIZER(-1);
+        if (use_etc_kderc.loadRelaxed() < 0) {
+            use_etc_kderc.storeRelaxed(!qEnvironmentVariableIsSet("KDE_SKIP_KDERC")); // for unit tests
+        }
+        if (use_etc_kderc.loadRelaxed()) {
+            etc_kderc =
+    #ifdef Q_OS_WIN
+                QFile::decodeName(qgetenv("WINDIR") + "/kde5rc");
+    #else
+                QStringLiteral("/etc/kde5rc");
+    #endif
+            if (!QFileInfo(etc_kderc).isReadable()) {
+                use_etc_kderc.storeRelaxed(false);
+                etc_kderc.clear();
+            }
+        }
+
+        setLocale(getDefaultLocaleName());
+*/
+    }
+
     /*!
      * Creates a KConfig object to manipulate a configuration file for the
      * current application.
@@ -172,13 +218,36 @@ public class KConfig: KConfigBase {
         }
     }
 
+    //==========================
+    // Private Static Methods
+    //==========================
+    private static func isGroupOrSubGroupMatch(
+        _ entryMapIt: KEntryMap.Iterator,
+        _ group: String
+    ) -> Bool {
+        let entryGroup: String = entryMapIt.key.group
+        let index = entryGroup.index(entryGroup.startIndex, offsetBy: group.count)
+        // Q_ASSERT_X(entryGroup.startsWith(group), Q_FUNC_INFO, "Precondition");
+        // return entryGroup.size() == group.size() || entryGroup[group.size()] == '\x1d'
+        return entryGroup.count == group.count || entryGroup[index] == "\u{001D}"
+    }
+
+    private static func isNonDeletedKey(_ entryMapIt: KEntryMap.Iterator) -> Bool {
+        return !entryMapIt.key.key.isEmpty && !entryMapIt.value.deleted
+    }
+
     //=====================
     // Private Methods
     //=====================
     private func hasNonDeletedEntries(_ group: String) -> Bool {
-        return entryMap.anyEntryWhoseGroupStartsWith(group, [&group](KEntryMapConstIterator entryMapIt) {
-            return isGroupOrSubGroupMatch(entryMapIt, group) && isNonDeletedKey(entryMapIt);
-        });
+        /*
+        return _entryMap.anyEntryWhoseGroupStartsWith(group, [&group](KEntryMapConstIterator entryMapIt) {
+            return isGroupOrSubGroupMatch(entryMapIt, group) && isNonDeletedKey(entryMapIt)
+        })
+        */
+        return _entryMap.anyEntryWhoseGroupStartsWith(group) {
+            return Self.isGroupOrSubGroupMatch($0, group) && Self.isNonDeletedKey($0)
+        }
     }
 
     private func wantGlobals() -> Bool
@@ -215,8 +284,9 @@ public class KConfig: KConfigBase {
         // TODO!
     }
 
-    private func groupList(_ groupName: String) -> [String] {
+    internal func groupList(_ groupName: String) -> [String] {
         let theGroup = groupName + "\u{001D}"
+        return []
         /*
         QSet<QStringView> groups;
 

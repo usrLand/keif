@@ -127,7 +127,7 @@ public class KConfigGroup: KConfigBase {
         // Q_ASSERT_X(isValid(), "KConfigGroup::groupImpl", "accessing an invalid group");
         // Q_ASSERT_X(!aGroup.isEmpty(), "KConfigGroup::groupImpl", "can not have an unnamed child group");
 
-        var newGroup = KConfigGroup(self, self.isGroupImmutable(groupName)), _const, groupName)
+        let newGroup = KConfigGroup(self, self.isGroupImmutable(groupName), _const, groupName)
 
         // newGroup.d = new KConfigGroupPrivate(this, isGroupImmutableImpl(aGroup), d->bConst, aGroup);
 
