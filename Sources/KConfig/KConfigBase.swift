@@ -1,43 +1,71 @@
+/*
+    This file is part of the KDE libraries
+    SPDX-FileCopyrightText: 2006, 2007 Thomas Braxton <kde.braxton@gmail.com>
+    SPDX-FileCopyrightText: 2001 Waldo Bastian <bastian@kde.org>
+    SPDX-FileCopyrightText: 1999 Preston Brown <pbrown@kde.org>
+    SPDX-FileCopyrightText: 1997 Matthias Kalle Dalheimer <kalle@kde.org>
+
+    SPDX-License-Identifier: LGPL-2.0-or-later
+*/
+
+/*!
+    * Flags to control write entry
+    *
+    * \value Persistent
+    *        Save this entry when saving the config object.
+    * \value Global
+    *        Save the entry to the global KDE config file instead of the application specific config file.
+    * \value Localized
+    *        Add the locale tag to the key when writing it.
+    * \value[since 5.51] Notify
+    *        Notifies remote KConfigWatchers of changes (requires DBus support). Implies Persistent.
+    * \value Normal
+    *        Save the entry to the application specific config file without a locale tag. This is the default.
+    * \sa KConfigGroup
+    * \sa KConfigWatcher
+    * \sa KConfigSkeletonItem::setWriteFlags()
+    */
+public struct WriteConfigFlags: OptionSet, Sendable {
+    public let rawValue: Int
+
+    public init(rawValue: Int) {
+        self.rawValue = rawValue
+    }
+
+    public static let persistent = WriteConfigFlags(rawValue: 0x01)
+    public static let global = WriteConfigFlags(rawValue: 0x02)
+    public static let localized = WriteConfigFlags(rawValue: 0x04)
+    public static let notify = WriteConfigFlags(rawValue: 0x08 | Self.persistent.rawValue)
+    public static let normal = WriteConfigFlags(rawValue: Self.persistent.rawValue)
+}
+// Q_DECLARE_FLAGS(WriteConfigFlags, WriteConfigFlag)
+
+
+/*!
+    * Possible return values for accessMode().
+    * \value NoAccess
+    * \value ReadOnly
+    * \value ReadWrite
+    */
+public enum AccessMode {
+    case noAccess
+    case readOnly
+    case readWrite
+}
+
 public protocol KConfigBase {
 // public:
     /*!
-     * Flags to control write entry
-     *
-     * \value Persistent
-     *        Save this entry when saving the config object.
-     * \value Global
-     *        Save the entry to the global KDE config file instead of the application specific config file.
-     * \value Localized
-     *        Add the locale tag to the key when writing it.
-     * \value[since 5.51] Notify
-     *        Notifies remote KConfigWatchers of changes (requires DBus support). Implies Persistent.
-     * \value Normal
-     *        Save the entry to the application specific config file without a locale tag. This is the default.
-     * \sa KConfigGroup
-     * \sa KConfigWatcher
-     * \sa KConfigSkeletonItem::setWriteFlags()
-     */
-    public enum WriteConfigFlag: Int {
-        case persistent = 0x01
-        case global = 0x02
-        case localized = 0x04
-
-        static let notify = 0x08 | .persistent
-        static let normal = .persistent
-    }
-    // Q_DECLARE_FLAGS(WriteConfigFlags, WriteConfigFlag)
-
-    /*!
      * Returns a list of groups that are known about.
      **/
-    public func groupList() -> [String] // = 0;
+    func groupList() -> [String] // = 0;
 
     /*!
      * Returns \c true if the specified group is known about.
      *
      * \a group name of group to search for
      */
-    public func hasGroup(_ group: String) -> Bool
+    func hasGroup(_ group: String) -> Bool
 
     /*!
      * Returns an object for the named subgroup.
@@ -46,7 +74,7 @@ public protocol KConfigBase {
      *   object to obtain a handle on the root group.
      * Returns config group object for the given group name.
      */
-    public func group(_ group: String) -> KConfigGroup
+    func group(_ group: String) -> KConfigGroup
 
     /*!
      * Const overload for group(const QString&)
@@ -60,7 +88,7 @@ public protocol KConfigBase {
      * This marks \a group as deleted in the config object. This effectively
      * removes any cascaded values from config files earlier in the stack.
      */
-    public func deleteGroup(_ group: String, _ flags: WriteConfigFlags = .normal)
+    func deleteGroup(_ group: String, _ flags: WriteConfigFlags)
 
     /*!
      * Syncs the configuration object that this group belongs to.
@@ -69,25 +97,13 @@ public protocol KConfigBase {
      * not overwritten. Note however, that this object is not automatically
      * updated with those changes.
      */
-    public func sync() -> Bool // = 0
+    func sync() -> Bool // = 0
 
     /*!
      * Reset the dirty flags of all entries in the entry map, so the
      * values will not be written to disk on a later call to sync().
      */
-    public func markAsClean() // = 0;
-
-    /*!
-     * Possible return values for accessMode().
-     * \value NoAccess
-     * \value ReadOnly
-     * \value ReadWrite
-     */
-    public enum AccessMode {
-        case noAccess
-        case readOnly
-        case readWrite
-    }
+    func markAsClean() // = 0;
 
     /*!
      * Returns the access mode of the app-config object.
@@ -99,12 +115,12 @@ public protocol KConfigBase {
      * read-write) and ReadWrite (the application-specific config
      * file is opened read-write).
      */
-    public func accessMode() -> AccessMode // = 0;
+    func accessMode() -> AccessMode // = 0;
 
     /*!
      * Checks whether this configuration object can be modified.
      */
-    public func isImmutable() -> Bool // = 0;
+    func isImmutable() -> Bool // = 0;
 
     /*!
      * Can changes be made to the entries in \a group?
@@ -113,20 +129,49 @@ public protocol KConfigBase {
      *
      * Returns \c false if the entries in \a group can be modified, otherwise \c true
      */
-    public func isGroupImmutable(_ group: String) -> Bool
+    func isGroupImmutable(_ group: String) -> Bool
 
 // protected:
-    internal init() {
-    }
 
-    internal func hasGroupImpl(_ groupName: String) -> Bool // = 0;
-    internal func groupImpl(_ groupName: String) -> KConfigGroup // = 0;
-    internal func deleteGroupImpl(_ groupName: String, _ flags: WriteConfigFlags = .normal) // = 0;
-    internal func isGroupImmutableImpl(_ groupName: String) -> Bool // = 0;
+    /*
+    /* internal */ func hasGroupImpl(_ groupName: String) -> Bool // = 0;
+    /* internal */ func groupImpl(_ groupName: String) -> KConfigGroup // = 0;
+    /* internal */ func deleteGroupImpl(_ groupName: String, _ flags: WriteConfigFlags) // = 0;
+    /* internal */ func isGroupImmutableImpl(_ groupName: String) -> Bool // = 0;
+    */
 
     /*
      * Virtual hook, used to add new "virtual" functions while maintaining
      * binary compatibility. Unused in this class.
      */
-    internal func virtual_hook(_ id: Int, _ data: UnsafeMutablePointer<UInt8>?)
+    /* internal */ // func virtual_hook(_ id: Int, _ data: UnsafeMutablePointer<UInt8>?)
+}
+
+/*
+public extension KConfigBase {
+    func deleteGroup(_ group: String, _ flags: WriteConfigFlags) {
+        deleteGroupImpl(group, flags)
+    }
+
+    func hasGroup(_ group: String) -> Bool {
+        hasGroupImpl(group)
+    }
+
+    func group(_ group: String) -> KConfigGroup {
+        groupImpl(group)
+    }
+
+    func isGroupImmutable(_ group: String) -> Bool {
+        isGroupImmutableImpl(group)
+    }
+
+    init() {}
+}
+*/
+
+internal protocol KConfigBasePrivate {
+    func hasGroupImpl(_ groupName: String) -> Bool // = 0;
+    func groupImpl(_ groupName: String) -> KConfigGroup // = 0;
+    func deleteGroupImpl(_ groupName: String, _ flags: WriteConfigFlags) // = 0;
+    func isGroupImmutableImpl(_ groupName: String) -> Bool // = 0;
 }
