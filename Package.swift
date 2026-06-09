@@ -61,7 +61,7 @@ let package = Package(
             ]
         ),
         .target(
-            name: "KConfig",
+            name: "KConfigCore",
             dependencies: ["KQt"],
             swiftSettings: [
                 .unsafeFlags(["-enable-library-evolution"]),
